@@ -13,7 +13,11 @@ python run.py --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}/${SEQUENCE}
 ################# boreas(aeva) #################
 DATASET_DIR=/home/yuchen/ASRL/data/BOREAS
 RESULT_DIR=/home/yuchen/ASRL/temp/doppler_odometry/boreas/aeva/doppler_icp
-SEQUENCE=boreas-2022-05-13-10-30
+
+# highway:     boreas-2022-05-13-09-23
+# easy:        boreas-2022-05-13-10-30
+# glen shield: boreas-2022-05-13-11-47
+SEQUENCE=boreas-2022-05-13-09-23
 python run_boreas.py --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}
 
 # this needs to be run outside the docker with the same result dir, sequence not needed
