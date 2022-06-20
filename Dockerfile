@@ -1,0 +1,90 @@
+FROM ubuntu:20.04
+
+CMD ["/bin/bash"]
+
+# Args for setting up non-root users, example command to use your own user:
+# docker build -t doppler_icp \
+#   --build-arg USERID=$(id -u) \
+#   --build-arg GROUPID=$(id -g) \
+#   --build-arg USERNAME=$(whoami) \
+#   --build-arg HOMEDIR=${HOME} .
+ARG GROUPID=0
+ARG USERID=0
+ARG USERNAME=root
+ARG HOMEDIR=/root
+
+RUN if [ ${GROUPID} -ne 0 ]; then addgroup --gid ${GROUPID} ${USERNAME}; fi \
+  && if [ ${USERID} -ne 0 ]; then adduser --disabled-password --gecos '' --uid ${USERID} --gid ${GROUPID} ${USERNAME}; fi
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+## Switch to specified user to create directories
+USER ${USERID}:${GROUPID}
+
+## Switch to root to install dependencies
+USER 0:0
+
+## Newer version of cmake from kitware apt repo
+RUN apt update && apt upgrade -q -y
+RUN apt update && apt install -q -y gpg wget
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+RUN echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
+
+## Dependencies
+RUN apt update && apt upgrade -q -y
+RUN apt update && apt install -q -y cmake git build-essential lsb-release curl gnupg2
+RUN apt update && apt install -q -y libboost-all-dev libomp-dev
+RUN apt update && apt install -q -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+RUN apt update && apt install -q -y freeglut3-dev
+RUN apt update && apt install -q -y python3 python3-distutils python3-pip
+
+## python alias and dependencies
+RUN apt update && apt install -q -y python-is-python3 virtualenv
+RUN pip3 install pybind11
+
+## Open3D deps
+RUN apt update && apt install -q -y xorg-dev libglu1-mesa-dev python3-dev
+RUN apt update && apt install -q -y libsdl2-dev libc++-7-dev libc++abi-7-dev ninja-build libxi-dev
+RUN apt update && apt install -q -y gfortran libtbb-dev libosmesa6-dev libudev-dev autoconf libtool
+
+# ## Install ROS2
+# # UTF-8
+# RUN apt install -q -y locales \
+#   && locale-gen en_US en_US.UTF-8 \
+#   && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+# ENV LANG=en_US.UTF-8
+# # Add ROS2 key and install from Debian packages
+# RUN apt install -q -y curl gnupg2 lsb-release
+# RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg \
+#   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null \
+#   && apt update && apt install -q -y ros-galactic-desktop
+
+# ## Install VTR specific ROS2 dependencies
+# RUN apt update && apt install -q -y \
+#   ros-galactic-xacro \
+#   ros-galactic-vision-opencv \
+#   ros-galactic-perception-pcl ros-galactic-pcl-ros
+
+## Install misc dependencies
+# RUN apt update && apt install -q -y \
+#   tmux \
+#   libboost-all-dev libomp-dev \
+#   libpcl-dev \
+#   python3-colcon-common-extensions \
+#   virtualenv
+
+## Switch to specified user
+USER ${USERID}:${GROUPID}
+
+## run the container (example command)
+# docker run -it --name doppler_icp \
+#   --privileged \
+#   --network=host \
+#   --gpus all \
+#   -e DISPLAY=$DISPLAY \
+#   -v /tmp/.X11-unix:/tmp/.X11-unix \
+#   -v ${HOME}:${HOME}:rw \
+#   -v ${HOME}/ASRL:${HOME}/ASRL:rw \
+#   -v ${HOME}/ASRL/data/boreas/sequences:${HOME}/ASRL/data/BOREAS \
+#   -v /media/yuchen/T7/ASRL/data/KITTI_raw:${HOME}/ASRL/data/KITTI_raw \
+#   doppler_icp
