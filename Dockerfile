@@ -77,7 +77,7 @@ RUN apt update && apt install -q -y gfortran libtbb-dev libosmesa6-dev libudev-d
 USER ${USERID}:${GROUPID}
 
 ## run the container (example command)
-# docker run -it --name doppler_icp \
+# docker run -it --name yuchen_doppler_icp \
 #   --privileged \
 #   --network=host \
 #   --gpus all \
@@ -85,6 +85,4 @@ USER ${USERID}:${GROUPID}
 #   -v /tmp/.X11-unix:/tmp/.X11-unix \
 #   -v ${HOME}:${HOME}:rw \
 #   -v ${HOME}/ASRL:${HOME}/ASRL:rw \
-#   -v ${HOME}/ASRL/data/boreas/sequences:${HOME}/ASRL/data/BOREAS \
-#   -v /media/yuchen/T7/ASRL/data/KITTI_raw:${HOME}/ASRL/data/KITTI_raw \
 #   doppler_icp

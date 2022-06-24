@@ -1,3 +1,5 @@
+WORKING_DIR=${HOME}/ASRL/doppler_icp
+
 ## build docker image
 docker build -t doppler_icp \
   --build-arg USERID=$(id -u) \
@@ -19,19 +21,19 @@ docker run -it --name doppler_icp \
   doppler_icp
 
 ## create virtualenv and upgrade pip
-cd ~/ASRL/Doppler-ICP
+cd ${WORKING_DIR}
 virtualenv venv
 source venv/bin/activate
 pip install --upgrade pip  # must update pip
 
 ## install open3d
-cd ~/ASRL/Doppler-ICP/Open3D
+cd ${WORKING_DIR}/Open3D
 mcd build
-cmake -DPython3_ROOT=/ext0/ASRL/Doppler-ICP/venv/bin/python \
-      -DCMAKE_INSTALL_PREFIX=/home/yuchen/ASRL/Doppler-ICP/Open3D/install ..
+cmake -DPython3_ROOT=${WORKING_DIR}/venv/bin/python \
+      -DCMAKE_INSTALL_PREFIX=${WORKING_DIR}/Open3D/install ..
 make -j$(nproc)
 make install
 make install-pip-package
 
 ## doppler icp python deps
-pip install -r requirements.txt  # version required??
+pip install -r requirements.txt
