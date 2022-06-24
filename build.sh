@@ -16,7 +16,7 @@ docker run -it --name doppler_icp \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v ${HOME}:${HOME}:rw \
   -v ${HOME}/ASRL:${HOME}/ASRL:rw \
-  -v ${HOME}/ASRL/data/boreas/sequences:${HOME}/ASRL/data/BOREAS \
+  -v ${HOME}/ASRL/data/boreas:${HOME}/ASRL/data/boreas \
   -v /media/yuchen/T7/ASRL/data/doppler_icp_carla:${HOME}/ASRL/data/doppler_icp_carla \
   doppler_icp
 
@@ -36,4 +36,5 @@ make install
 make install-pip-package
 
 ## doppler icp python deps
+cd ${WORKING_DIR}
 pip install -r requirements.txt
