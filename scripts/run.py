@@ -101,8 +101,8 @@ def run(args):
     if args.end < 0: args.end = len(pcd_files) - 1
     for i in tqdm(range(args.start, args.end), initial=1, desc='Processing'):
         # Load the point cloud into Open3D format (without any pre-processing).
-        source = utils.load_point_cloud(pcd_files[i])
-        target = utils.load_point_cloud(pcd_files[i + 1])
+        source = utils.load_point_cloud(pcd_files[i], has_timestamp=bool(args.raw_data))
+        target = utils.load_point_cloud(pcd_files[i + 1], has_timestamp=bool(args.raw_data))
 
         # Compute the relative pose (for reference/ground-truth).
         ref_transform = utils.relative_pose(ref_poses[i + 1], ref_poses[i])
@@ -176,6 +176,8 @@ def parse_args():
                              ' path to the sequence directory')
     parser.add_argument('--output_dir', '-o', type=str, required=True,
                         help='Directory to save the registration results at')
+    parser.add_argument('--raw_data', '-r', type=int, default=0,
+                        help='Raw data mode: 0=no, 1=yes')
     parser.add_argument('--start', '-s', type=int, default=0,
                         help='Start frame index (inclusive)')
     parser.add_argument('--end', '-e', type=int, default=-1,

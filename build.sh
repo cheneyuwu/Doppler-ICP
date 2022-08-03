@@ -18,6 +18,9 @@ docker run -it --name doppler_icp \
   -v ${HOME}/ASRL:${HOME}/ASRL:rw \
   -v ${HOME}/ASRL/data/boreas:${HOME}/ASRL/data/boreas \
   -v /media/yuchen/T7/ASRL/data/doppler_icp_carla:${HOME}/ASRL/data/doppler_icp_carla \
+	-v /media/yuchen/T7/ASRL/data/aeva:${HOME}/ASRL/data/aeva \
+  -v /media/yuchen/T7/ASRL/data/kitti_raw:${HOME}/ASRL/data/kitti_raw \
+	-v /media/yuchen/T7/ASRL/data/kitti_360:${HOME}/ASRL/data/kitti_360 \
   doppler_icp
 
 ## create virtualenv and upgrade pip

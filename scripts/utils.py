@@ -152,7 +152,7 @@ def load_point_cloud_filenames(directory):
                    for file in glob.glob(os.path.join(directory, '*.bin'))])
 
 
-def load_point_cloud(filename, ndarray=False):
+def load_point_cloud(filename, ndarray=False, has_timestamp=False):
     """Loads a point cloud binary file and converts to o3d.geometry.PointCloud.
 
     Args:
@@ -163,7 +163,7 @@ def load_point_cloud(filename, ndarray=False):
         o3d.geometry.PointCloud with geometry and Doppler velocities or
         (N, 4) ndarray containing the geometry and Doppler velocties.
     """
-    data = np.fromfile(filename, dtype=np.float32).reshape(-1, 4)
+    data = np.fromfile(filename, dtype=np.float32).reshape(-1, 5 if has_timestamp else 4)
     if ndarray: return data.astype('float64')
 
     pcd = o3d.geometry.PointCloud()
