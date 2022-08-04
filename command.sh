@@ -8,11 +8,11 @@ cd ${WORKING_DIR}/scripts
 ## carla (no motion distortion)
 DATASET_DIR=${HOME}/ASRL/data/doppler_icp_carla
 RESULT_DIR=${HOME}/ASRL/temp/doppler_icp/dicp_corrected
+# carla-town04-straight-walls
+# carla-town05-curved-walls
 # bunker-road
 # bunker-road-vehicles
 # robin-williams-tunnel
-# carla-town04-straight-walls
-# carla-town05-curved-walls
 SEQUENCE=bunker-road
 python run.py -s 1 --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}/${SEQUENCE}
 
