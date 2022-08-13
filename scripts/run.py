@@ -58,6 +58,7 @@ from tqdm import tqdm
 
 import registration
 import utils
+import utils_boreas
 
 
 def run(args):
@@ -164,6 +165,10 @@ def run(args):
     # Save the trajectory from ICP in TUM format.
     utils.export_tum_poses(join(args.output_dir, 'icp_poses.txt'),
                            results['poses'], results['timestamps'])
+
+    filename = join(args.output_dir, args.sequence + '_poses.txt')
+    os.makedirs(dirname(filename), exist_ok=True)
+    utils_boreas.generate_results(filename, results['poses'], np.eye(4))
 
     # Emit exit code on failure.
     exit(not success)

@@ -18,22 +18,22 @@ docker run -it --name doppler_icp \
   -v ${HOME}/ASRL:${HOME}/ASRL:rw \
   -v ${HOME}/ASRL/data/boreas:${HOME}/ASRL/data/boreas \
   -v /media/yuchen/T7/ASRL/data/dicp_corrected:${HOME}/ASRL/data/dicp_corrected \
-	-v /media/yuchen/T7/ASRL/data/dicp:${HOME}/ASRL/data/dicp \
+  -v /media/yuchen/T7/ASRL/data/dicp:${HOME}/ASRL/data/dicp \
   -v /media/yuchen/T7/ASRL/data/kitti_raw:${HOME}/ASRL/data/kitti_raw \
-	-v /media/yuchen/T7/ASRL/data/kitti_360:${HOME}/ASRL/data/kitti_360 \
+  -v /media/yuchen/T7/ASRL/data/kitti_360:${HOME}/ASRL/data/kitti_360 \
   doppler_icp
 
 ## create virtualenv and upgrade pip
 cd ${WORKING_DIR}
 virtualenv venv
 source venv/bin/activate
-pip install --upgrade pip  # must update pip
+pip install --upgrade pip # must update pip
 
 ## install open3d
 cd ${WORKING_DIR}/Open3D
 mcd build
 cmake -DPython3_ROOT=${WORKING_DIR}/venv/bin/python \
-      -DCMAKE_INSTALL_PREFIX=${WORKING_DIR}/Open3D/install ..
+  -DCMAKE_INSTALL_PREFIX=${WORKING_DIR}/Open3D/install ..
 make -j$(nproc)
 make install
 make install-pip-package

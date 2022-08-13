@@ -59,7 +59,7 @@ def get_time_from_filename(file):
 
 
 def load_calibration():
-    """Returns T_V_to_S (T_sv)"""
+    """Returns T_V_to_S (T_vs)"""
     T_applanix_aeva = np.array(
         [[ 0.0, -1.0,  0.0, -0.390],
          [ 1.0,  0.0,  0.0,  0.369],
@@ -76,27 +76,30 @@ def load_calibration():
 
     T_aeva_vehicle = get_inverse_tf(T_applanix_aeva) @ T_applanix_vehicle
 
-    return T_aeva_vehicle
+    return get_inverse_tf(T_aeva_vehicle)
 
 
 def load_point_cloud(path):
-    """Loads a pointcloud (np.ndarray) (N, 6) from path [x, y, z, intensity, radial_velocity, time]"""
+    """Loads a pointcloud (np.ndarray) (N, 7) from path [x, y, z, intensity, radial_velocity, time, beam id]"""
     # dtype MUST be float32 to load this properly!
-    data = np.fromfile(path, dtype=np.float32).reshape((-1, 6))
+    data = np.fromfile(path, dtype=np.float32).reshape((-1, 7))
+    # # limit range to 40m
+    # data_range = np.linalg.norm(data[:, :3], axis=-1)
+    # data = data[data_range < 40.0]
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(data[:, :3].astype('float64'))
     pcd.dopplers = o3d.utility.DoubleVector(data[:, 4].astype('float64'))
     return pcd
 
-def generate_results(filename, poses, T_sv):
+def generate_results(filename, poses, T_vs):
     assert os.path.isdir(os.path.dirname(filename)), 'Invalid output filename'
 
     results = []
     T_v0_v = np.eye(4)
     for T_vm1_v in poses:
         T_v0_v = T_v0_v @ T_vm1_v
-        T_s0_s = T_sv @ T_v0_v @ np.linalg.inv(T_sv)
+        T_s0_s = get_inverse_tf(T_vs) @ T_v0_v @ T_vs
         T_s0_s_trunc = T_s0_s.flatten().tolist()[:12]
         results.append(T_s0_s_trunc)
 

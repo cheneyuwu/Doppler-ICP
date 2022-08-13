@@ -168,7 +168,7 @@ def load_point_cloud(filename, ndarray=False, has_timestamp=False):
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(data[:, :3].astype('float64'))
-    pcd.dopplers = o3d.utility.DoubleVector(data[:, -1].astype('float64'))
+    pcd.dopplers = o3d.utility.DoubleVector(data[:, 3].astype('float64'))
     return pcd
 
 

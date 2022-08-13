@@ -14,27 +14,26 @@ RESULT_DIR=${HOME}/ASRL/temp/doppler_icp/dicp_corrected
 # bunker-road-vehicles
 # robin-williams-tunnel
 SEQUENCE=bunker-road
-python run.py -s 1 --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}/${SEQUENCE}
+python run.py -s 1 --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}
 
 ## dicp datasets (has motion distortion)
-DATASET_DIR=${HOME}/ASRL/data/aeva
-RESULT_DIR=${HOME}/ASRL/temp/doppler_odometry/dicp
-# brisbane-lagoon-freeway
-# bunker-road
-# bunker-road-vehicles
-# robin-williams-tunnel
-# san-francisco-city
-SEQUENCE=san-francisco-city
-python run.py -r 1 --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}/${SEQUENCE}
+DATASET_DIR=${HOME}/ASRL/data/dicp
+RESULT_DIR=${HOME}/ASRL/temp/doppler_odometry/dicp/doppler_icp
+# SEQUENCE=brisbane-lagoon-freeway
+# SEQUENCE=bunker-road
+# SEQUENCE=bunker-road-vehicles
+SEQUENCE=robin-williams-tunnel
+# SEQUENCE=san-francisco-city
+python run.py -r 1 --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}
 
 ## boreas(aeva)
 DATASET_DIR=${HOME}/ASRL/data/boreas/sequences
 RESULT_DIR=${HOME}/ASRL/temp/doppler_odometry/boreas/aeva/doppler_icp
-# highway 7:    boreas-2022-05-13-09-23
-# marc santi:   boreas-2022-05-13-10-30
-# glen shields: boreas-2022-05-13-11-47
-# cocksfield:   boreas-2022-05-18-17-23
-SEQUENCE=boreas-2022-05-13-10-30
+# SEQUENCE=boreas-2022-07-19-16-06 # utias
+# SEQUENCE=boreas-2022-08-05-12-59 # h7
+# SEQUENCE=boreas-2022-08-05-13-30 # h404
+# SEQUENCE=boreas-2022-08-05-13-54 # dvp
+SEQUENCE=boreas-2022-08-05-15-01 # h427
 python run_boreas.py --sequence ${DATASET_DIR}/${SEQUENCE} -o ${RESULT_DIR}
 
 ################# evals #################
