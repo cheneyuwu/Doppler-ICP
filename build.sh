@@ -1,4 +1,5 @@
 WORKING_DIR=${HOME}/ASRL/doppler_icp
+cd ${WORKING_DIR}
 
 ## build docker image
 docker build -t doppler_icp \
