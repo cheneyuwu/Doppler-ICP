@@ -84,6 +84,9 @@ def run(args):
     timestamps = [utils_boreas.get_time_from_filename(f) for f in pcd_files]
     params['T_V_to_S'] = utils_boreas.load_calibration()
 
+    # Load velocity calibration
+    calibrate_velocity = utils_boreas.load_velocity_calibration(join(seq_dir, 'aeva_calib'))
+
     # Picks the specified registration algorithm (Point-to-Plane vs DICP).
     icp_method = registration.doppler_icp if args.method == 'doppler' else \
                  registration.point_to_plane_icp
@@ -99,8 +102,8 @@ def run(args):
     if args.end < 0: args.end = len(pcd_files) - 1
     for i in tqdm(range(args.start, args.end), initial=1, desc='Processing'):
         # Load the point cloud into Open3D format (without any pre-processing).
-        source = utils_boreas.load_point_cloud(pcd_files[i])
-        target = utils_boreas.load_point_cloud(pcd_files[i + 1])
+        source = utils_boreas.load_point_cloud(pcd_files[i], calibrate_velocity)
+        target = utils_boreas.load_point_cloud(pcd_files[i + 1], calibrate_velocity)
 
         # Compute the relative pose (for reference/ground-truth).
         params['period'] = timestamps[i + 1] - timestamps[i]

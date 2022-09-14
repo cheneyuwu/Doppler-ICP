@@ -19,13 +19,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 """Utilities library."""
 
 import copy
 import glob
 import json
 import os
+import os.path as osp
 import csv
 
 import numpy as np
@@ -36,16 +36,16 @@ from pathlib import Path
 
 
 def get_inverse_tf(T):
-  """Returns the inverse of a given 4x4 homogeneous transform.
+    """Returns the inverse of a given 4x4 homogeneous transform.
     Args:
         T (np.ndarray): 4x4 transformation matrix
     Returns:
         np.ndarray: inv(T)
     """
-  T2 = T.copy()
-  T2[:3, :3] = T2[:3, :3].transpose()
-  T2[:3, 3:] = -1 * T2[:3, :3] @ T2[:3, 3:]
-  return T2
+    T2 = T.copy()
+    T2[:3, :3] = T2[:3, :3].transpose()
+    T2[:3, 3:] = -1 * T2[:3, :3] @ T2[:3, 3:]
+    return T2
 
 
 def get_time_from_filename(file):
@@ -60,26 +60,62 @@ def get_time_from_filename(file):
 
 def load_calibration():
     """Returns T_V_to_S (T_vs)"""
-    T_applanix_aeva = np.array(
-        [[ 0.0, -1.0,  0.0, -0.390],
-         [ 1.0,  0.0,  0.0,  0.369],
-         [ 0.0,  0.0,  1.0, -0.103],
-         [ 0.0,  0.0,  0.0,  1.0  ]]
-    )
+    T_applanix_aeva = np.array([
+        [0.0, -1.0, 0.0, -0.390],
+        [1.0, 0.0, 0.0, 0.369],
+        [0.0, 0.0, 1.0, -0.103],
+        [0.0, 0.0, 0.0, 1.0],
+    ])
 
-    T_applanix_vehicle = np.array(
-        [[ 0.0, -1.0,  0.0,  0.0  ],
-         [ 1.0,  0.0,  0.0, -0.466],
-         [ 0.0,  0.0,  1.0,  0.0  ],
-         [ 0.0,  0.0,  0.0,  1.0  ]]
-    )
+    T_applanix_vehicle = np.array([
+        [0.0, -1.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0, -0.466],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ])
 
     T_aeva_vehicle = get_inverse_tf(T_applanix_aeva) @ T_applanix_vehicle
 
     return get_inverse_tf(T_aeva_vehicle)
 
 
-def load_point_cloud(path):
+def load_velocity_calibration(path):
+    rt_parts = np.loadtxt(osp.join(path, "rt_part.csv"), delimiter=",")
+    azi_ranges = []
+    for i in range(4):
+        azi_ranges.append(np.loadtxt(osp.join(path, "azi_minmax_{}.csv".format(i)), delimiter=","))
+    vel_means = []
+    for i in range(4):
+        vel_means.append(np.loadtxt(osp.join(path, "vel_mean_{}.csv".format(i)), delimiter=","))
+
+    # flatten rt_parts
+    for i in range(4):
+        rt_parts[i, :] += i * 10.0
+    rt_parts = rt_parts[:, :20].reshape(-1)
+    azi_ranges = np.array(azi_ranges).reshape(rt_parts.shape[0], 2)
+    vel_means = np.array(vel_means).reshape(rt_parts.shape[0], -1)
+    vel_num_bins = vel_means.shape[-1]
+
+    def _calibrate(pcd):
+        """Calibrates a point cloud (np.ndarray) (N, 7) with the calibration parameters"""
+
+        bs = pcd[:, 6].astype(np.int32)  # beam id
+
+        max_time = np.max(pcd[:, 5])
+        min_time = np.min(pcd[:, 5])
+        rts = (pcd[:, 5] - min_time) / (max_time - min_time)  # relative time
+
+        azis = np.arctan2(pcd[:, 1], pcd[:, 0])  # azimuth
+
+        ps = np.clip(np.searchsorted(rt_parts, 10 * bs + rts) - 1, 0, rt_parts.shape[0] - 1)
+        azi_ress = (azi_ranges[ps, 1] - azi_ranges[ps, 0]) / vel_num_bins
+        bin_ids = np.floor((azis - azi_ranges[ps, 0]) / azi_ress)
+        pcd[:, 4] -= vel_means[ps, np.clip(bin_ids, 0, vel_num_bins - 1).astype(np.int32)]
+
+    return _calibrate
+
+
+def load_point_cloud(path, calibrate=None):
     """Loads a pointcloud (np.ndarray) (N, 7) from path [x, y, z, intensity, radial_velocity, time, beam id]"""
     # dtype MUST be float32 to load this properly!
     data = np.fromfile(path, dtype=np.float32).reshape((-1, 7))
@@ -87,10 +123,14 @@ def load_point_cloud(path):
     # data_range = np.linalg.norm(data[:, :3], axis=-1)
     # data = data[data_range < 40.0]
 
+    if calibrate is not None:
+        calibrate(data)
+
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(data[:, :3].astype('float64'))
     pcd.dopplers = o3d.utility.DoubleVector(data[:, 4].astype('float64'))
     return pcd
+
 
 def generate_results(filename, poses, T_vs):
     assert os.path.isdir(os.path.dirname(filename)), 'Invalid output filename'
